@@ -33,6 +33,7 @@ SOURCES = \
 	main.c \
 	make.c \
 	matlab.c \
+	objc.c \
 	ocaml.c \
 	options.c \
 	parse.c \
@@ -96,6 +97,7 @@ OBJECTS = \
 	make.$(OBJEXT) \
 	matlab.$(OBJEXT) \
 	ocaml.$(OBJEXT) \
+	objc.$(OBJEXT) \
 	options.$(OBJEXT) \
 	parse.$(OBJEXT) \
 	pascal.$(OBJEXT) \
