@@ -39,6 +39,7 @@
 	MakefileParser, \
 	MatLabParser, \
 	OcamlParser, \
+	ObjCParser, \
 	PascalParser, \
 	PerlParser, \
 	PhpParser, \
