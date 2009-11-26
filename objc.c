@@ -3,7 +3,7 @@
 *   Copyright (c) MMIX Matthieu Cormier <mcormier@cs.dalc.ca>
 *
 *   The original implementation of this parser comes from Andrew Ruder <andy@aeruder.net>
-*       git clone git://git.aeruder.net/ctags-objc.git
+*       http://gitweb.aeruder.net/?p=ctags-objc.git;a=summary
 *
 *   This source code is released for free distribution under the terms of the
 *   GNU General Public License.
