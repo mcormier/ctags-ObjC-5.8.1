@@ -1,7 +1,9 @@
 /*
-*   $Id$
 *
 *   Copyright (c) MMIX Matthieu Cormier <mcormier@cs.dalc.ca>
+*
+*   The original implementation of this parser comes from Andrew Ruder <andy@aeruder.net>
+*       git clone git://git.aeruder.net/ctags-objc.git
 *
 *   This source code is released for free distribution under the terms of the
 *   GNU General Public License.
@@ -10,9 +12,6 @@
 *   files.
 */
 
-/*
-*   INCLUDE FILES
-*/
 #include "general.h"  /* must always come first */
 
 #include <string.h>
@@ -250,8 +249,7 @@ int skipToMethod(void)
 static int skipToObjCKeyword (void)
 {
 	int z;
-	while ((z = skipToNonWhite()) != EOF)
-	{
+	while ((z = skipToNonWhite()) != EOF) {
 		cppGetc();
 		if (z == '"') readToMatchingBrace(0);
 		if (z == '@') break;
@@ -264,8 +262,8 @@ static int skipToObjCKeyword (void)
  * Reads from 'start' to 'end' and eliminates all spaces
  * inbetween.
  */
-static char *readBetweenDelimitersWhileTrimmingSpaces(char start, char end)
-{
+static char *readBetweenDelimitersWhileTrimmingSpaces(char start, char end) {
+
 	static vString *wordBuffer = 0;
 	int z;
 	if (!wordBuffer)
@@ -290,8 +288,7 @@ static char *readBetweenDelimitersWhileTrimmingSpaces(char start, char end)
  * It also folds down the spaces.
  * Returns NULL if it fails.
  */
-static char *readProtocolTag(void)
-{
+static char *readProtocolTag(void) {
 	return readBetweenDelimitersWhileTrimmingSpaces('<', '>');
 }
 
@@ -300,8 +297,7 @@ static char *readProtocolTag(void)
  * It also folds down the spaces.
  * Returns NULL if it fails.
  */
-static char *readCategoryTag(void)
-{
+static char *readCategoryTag(void) {
 	return readBetweenDelimitersWhileTrimmingSpaces('(', ')');
 }
 
@@ -323,8 +319,7 @@ static void recordPosition(void)
 /**
  * Emit a tag with a given name, type, scope, and inheritance
  */
-static void emitObjCTag(const char *name, objcKind type, const char *scope, const char *inheritance)
-{
+static void emitObjCTag(const char *name, objcKind type, const char *scope, const char *inheritance) {
 	tagEntryInfo tag;
 
 	initTagEntry (&tag, name);
@@ -580,67 +575,100 @@ static void implementationHandler(const char *keyword)
 	eFree(ident);
 }
 
-/**
- * This is a very simple parser.  On the first pass it
- * basically looks for @keyword.
- * On the later passes, it hands it off to the C/C++ parser
- */
-static boolean findObjCOrObjCppTags (const unsigned int passCount,
-        parserDefinition *baseParser)
-{
-	if (passCount == 1) {
-		cppInit(0, 0);
+static boolean doObjCParsing() {
+
+  // HACK ALERT.  If we don't seek to the end of
+  // the file then all the tags that the CParser
+  // creates are overwritten.  It also appears
+  // that we are at the end of the file. fseek
+  // could be causing a side-effect?
+
+  fseek (TagFile.fp, 0L, SEEK_END); 
+  cppInit(0, 0);
 
 		while (skipToObjCKeyword() != EOF) {
-			struct handlerType *iter;
-			char *keyword;
+		 	struct handlerType *iter;
+		 	char *keyword;
 
-			recordPosition();
-			keyword = readToNonAlpha(NULL);
-			if (!keyword) continue;
-			keyword = eStrdup(keyword);
+    recordPosition();
+    keyword = readToNonAlpha(NULL);
+    if (!keyword) continue;
+    keyword = eStrdup(keyword);
 
-			for (iter = handlers; iter->name; iter++)
-				if (!strcmp(iter->name, keyword))
-					iter->handler(keyword);
+			 for (iter = handlers; iter->name; iter++) {
+				  if (!strcmp(iter->name, keyword)) {
+					   iter->handler(keyword);
+      }
+    }
 
-			eFree(keyword);
+			 eFree(keyword);
 		}
 
-		cppTerminate ();
-	} else {
+		cppTerminate();
+
+  return FALSE;
+}
+
+static boolean findTags (const unsigned int passCount,
+        parserDefinition *baseParser) {
+
+ if ( passCount == 1 ) {
 		if (baseParser && baseParser->parser2) {
-			return baseParser->parser2(passCount - 1);
+			baseParser->parser2(passCount);
 		}
+
+  // ignore the return value and do a second pass 
+  // with the ObjCParser
+  return TRUE;
 	}
 
-	return TRUE;
+	if (passCount == 2) {
+   return doObjCParsing();
+	} 
+
+	return FALSE;
+}
+
+static parserDefinition* getCParser(void) {
+	  static parserDefinition *cParser = 0;
+   if (!cParser) {
+     cParser = CParser();
+   }
+   return cParser;
+}
+
+static parserDefinition* getCppParser(void) {
+	  static parserDefinition *cppParser = 0;
+   if (!cppParser) {
+     cppParser = CppParser();
+   }
+   return cppParser;
 }
 
 /*
  * Grab the C parser and hand it up to findObjCOrObjCppTags
  */
-static boolean findObjCTags (const unsigned int passCount)
-{
-	static parserDefinition *cParser = 0;
-	if (!cParser) {
-		cParser = CParser();
-	}
-	return findObjCOrObjCppTags(passCount, cParser);
+static boolean findObjCTags (const unsigned int passCount) {
+	parserDefinition *parser = 0;
+
+	if ( isHeaderFile() ) {
+   parser = getCppParser();
+ } else {
+   parser = getCParser();
+ }
+
+	boolean ret = findTags(passCount, parser);
+ return ret;
 }
 
-
-
-// TODO -- change extension back from .v to .m
-extern parserDefinition* ObjCParser (void)
-{
-	static const char *const extensions [] = { "v", NULL };
-	parserDefinition* def = parserNew ("ObjC");
-	def->kinds      = ObjCKinds;
-	def->kindCount  = KIND_COUNT (ObjCKinds);
-	def->extensions = extensions;
-	def->parser2    = findObjCTags;
-	return def;
+extern parserDefinition* ObjCParser (void) {
+  static const char *const extensions [] = { "m","h", NULL };
+  parserDefinition* def = parserNew ("ObjC");
+  def->kinds      = ObjCKinds;
+  def->kindCount  = KIND_COUNT (ObjCKinds);
+  def->extensions = extensions;
+  def->parser2    = findObjCTags;
+  return def;
 }
 
-/* vi:set tabstop=4 shiftwidth=4: */
+/* vi:set tabstop=1 shiftwidth=2 softtabstop=2 smarttab: */
