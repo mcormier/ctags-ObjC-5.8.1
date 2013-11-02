@@ -70,8 +70,7 @@ static struct handlerType handlers[] = {
  * that returns false when it should stop and this takes
  * care of the vString stuff and checking for EOF etc..
  */
-static char *readToFalse(int (*shouldcontinue)(int c, int pos), int *ender)
-{
+static char *readToFalse(int (*shouldcontinue)(int c, int pos), int *ender) {
   static vString *wordBuffer = 0;
   int len = 0;
   int z;
@@ -213,16 +212,14 @@ static int myIsNotMatchingBrace(int c, int pos) {
   return parens || braces || inQuotes || squares;
 }
 
-static char *readToMatchingBrace(int *ender)
-{
+static char *readToMatchingBrace(int *ender) {
   return readToFalse(myIsNotMatchingBrace, ender);
 }
 
 /**
  * An easier to use alternative to readToNonSpace
  */
-int skipToNonWhite(void)
-{
+int skipToNonWhite(void) {
   int z;
   readToNonSpace(&z);
   return z;
@@ -231,8 +228,7 @@ int skipToNonWhite(void)
 /**
  * An easier to use front-end to readToMethod
  */
-int skipToMethod(void)
-{
+int skipToMethod(void) {
   int z;
   readToMethod(&z);
   return z;
@@ -241,8 +237,7 @@ int skipToMethod(void)
 /**
  * Find a @ that isn't in a string
  */
-static int skipToObjCKeyword (void)
-{
+static int skipToObjCKeyword (void) {
   int z;
   while ((z = skipToNonWhite()) != EOF) {
     cppGetc();
@@ -305,8 +300,7 @@ static char *readCategoryTag(void) {
  */
 static unsigned recordedLineno = 0;
 static fpos_t recordedPos;
-static void recordPosition(void)
-{
+static void recordPosition(void) {
   recordedLineno = getSourceLineNumber();
   recordedPos = getInputFilePosition();
 }
@@ -347,8 +341,7 @@ static void emitObjCTag(const char *name, objcKind type, const char *scope, cons
 /**
  * Parse a method starting with the -/+.  Return it in the method vString
  */
-static void getSingleObjCMethod(vString *method)
-{
+static void getSingleObjCMethod(vString *method) {
   int z;
   int skipNextIdent;
   const char *temp;
@@ -386,8 +379,7 @@ static void getSingleObjCMethod(vString *method)
  * Generate tags for all Obj-C methods until an @end.  scope and inheritance are
  * the class/protocol the method belongs to and the inheritance chain for that class
  */
-static void readObjCMethods(objcKind mType, const char *scope, const char *inheritance)
-{
+static void readObjCMethods(objcKind mType, const char *scope, const char *inheritance) {
   int z;
   const char *temp;
   vString *method = vStringNew();
@@ -428,8 +420,7 @@ static void readObjCMethods(objcKind mType, const char *scope, const char *inher
  *   ...
  *   @end // Handle this protocol
  */
-static void protocolHandler(const char *keyword)
-{
+static void protocolHandler(const char *keyword) {
   char *ident;
   char *proto = NULL;
   int z;
@@ -471,8 +462,7 @@ static void protocolHandler(const char *keyword)
  *  methods
  *  @end
  */
-static void interfaceHandler(const char *keyword)
-{
+static void interfaceHandler(const char *keyword) {
   char *ident;
   char *proto = NULL;
   char *superclass = NULL;
@@ -538,8 +528,7 @@ static void interfaceHandler(const char *keyword)
  *  methods
  *  @end
  */
-static void implementationHandler(const char *keyword)
-{
+static void implementationHandler(const char *keyword) {
   char *ident;
   int z;
 
