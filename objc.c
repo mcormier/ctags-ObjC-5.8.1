@@ -2,7 +2,7 @@
 *
 *   Copyright (c) MMIX Matthieu Cormier <mcormier@preenandprune.com>
 *
-*   The original implementation of this parser comes from Andrew Ruder <andy@aeruder.net>
+*   The original implementation of this parser came from Andrew Ruder <andy@aeruder.net>
 *       http://gitweb.aeruder.net/?p=ctags-objc.git;a=summary
 *
 *   This source code is released for free distribution under the terms of the
@@ -23,6 +23,9 @@
 #include "read.h"
 #include "vstring.h"
 #include "routines.h"
+
+
+static void recordPosition(void); 
 
 /*
 *   DATA DECLARATIONS
@@ -239,10 +242,15 @@ int skipToMethod(void) {
  */
 static int skipToObjCKeyword (void) {
   int z;
+  int x;
   while ((z = skipToNonWhite()) != EOF) {
-    cppGetc();
+    x = cppGetc();
     if (z == '"') readToMatchingBrace(0);
-    if (z == '@') break;
+    if (z == '@') { 
+      //cppUngetc(x);
+      break;
+    }
+
   }
 
   return z;
@@ -308,12 +316,16 @@ static void recordPosition(void) {
 /**
  * Emit a tag with a given name, type, scope, and inheritance
  */
-static void emitObjCTag(const char *name, objcKind type, const char *scope, const char *inheritance) {
+static void emitObjCTag(const char *name, objcKind type, const char *scope, 
+                        const char *inheritance, boolean useLastSavePosition) {
   tagEntryInfo tag;
 
   initTagEntry (&tag, name);
-  tag.lineNumber = recordedLineno;
-  tag.filePosition = recordedPos;
+
+  if(useLastSavePosition) {
+    tag.lineNumber = recordedLineno;
+    tag.filePosition = recordedPos;
+  }
 
   if (scope && *scope) {
     switch(type) {
@@ -331,11 +343,16 @@ static void emitObjCTag(const char *name, objcKind type, const char *scope, cons
     }
     tag.extensionFields.scope[1] = scope;
   }
-  if (inheritance && *inheritance)
+
+  if (inheritance && *inheritance) {
     tag.extensionFields.inheritance = inheritance;
+  }
+
   tag.kindName = ObjCKinds[type].name;
   tag.kind = ObjCKinds[type].letter;
   makeTagEntry(&tag);
+
+
 }
 
 /**
@@ -347,7 +364,6 @@ static void getSingleObjCMethod(vString *method) {
   const char *temp;
 
   vStringClear(method);
-  recordPosition();
   z = cppGetc();
   vStringPut(method, z);
   skipNextIdent = 0;
@@ -365,10 +381,11 @@ static void getSingleObjCMethod(vString *method) {
     else if (myIsIdentifier(z, 0)) {
       cppUngetc(z);
       temp = readToNonIdentifier(0);
-      if (skipNextIdent)
+      if (skipNextIdent) {
         skipNextIdent = 0;
-      else
+      } else {
         vStringCatS(method, temp);
+      }
     }
   }
   cppUngetc(z);
@@ -392,8 +409,9 @@ static void readObjCMethods(objcKind mType, const char *scope, const char *inher
       case '@':
         cppGetc();
         temp = readToNonAlpha(0);
-        if (temp && !strcmp(temp, "end"))
+        if (temp && !strcmp(temp, "end")){
           return;
+        }
         break;
       case '[':
       case '{':
@@ -401,8 +419,9 @@ static void readObjCMethods(objcKind mType, const char *scope, const char *inher
         break;
       case '-':
       case '+':
+        recordPosition();
         getSingleObjCMethod(method);
-        emitObjCTag(vStringValue(method), mType, scope, inheritance);
+        emitObjCTag(vStringValue(method), mType, scope, inheritance, FALSE);
         break;
       default:
         break;
@@ -443,7 +462,7 @@ static void protocolHandler(const char *keyword) {
   else
     proto = eStrdup("<>");
 
-  emitObjCTag(ident, K_PROTOCOL, 0, proto);
+  emitObjCTag(ident, K_PROTOCOL, 0, proto, FALSE);
 
   readObjCMethods(K_PMETHOD, ident, proto);
 
@@ -451,16 +470,17 @@ static void protocolHandler(const char *keyword) {
   eFree(proto);
 }
 
+
 /**
  * interfaces in Obj-C look like:
- *
+ * 
  * @interface Class1 [ : SuperClass | (CategoryName) ] [ <Protocols> ]
- *  [ {
- *     ...
- *    }
- *  ]
- *  methods
- *  @end
+ *         [ {
+ *           ...
+ *            }
+ *         ]
+ *         methods
+ *         @end
  */
 static void interfaceHandler(const char *keyword) {
   char *ident;
@@ -472,10 +492,12 @@ static void interfaceHandler(const char *keyword) {
   z = skipToNonWhite();
 
   ident = readToNonIdentifier(0);
-  if (ident && *ident)
+  if (ident && *ident) {
     ident = eStrdup(ident);
-  else
-    return;
+   } else {
+     return;
+  }
+
   z = skipToNonWhite();
   if (z == '(') {
     char *category;
@@ -487,28 +509,31 @@ static void interfaceHandler(const char *keyword) {
       strcat(newIdent, category);
       eFree(ident);
       ident = newIdent;
-    }
+     }
   } else if (z == ':') {
-    cppGetc();
-    skipToNonWhite();
-    superclass = readToNonIdentifier(0);
+     cppGetc();
+     skipToNonWhite();
+     superclass = readToNonIdentifier(0);
   }
-  if (superclass && *superclass)
+
+  if (superclass && *superclass) {
     superclass = eStrdup(superclass);
-  else
+  } else{
     superclass = eStrdup("");
+  }
 
   proto = readProtocolTag();
-  if (proto && *proto)
+  if (proto && *proto) {
     proto = eStrdup(proto);
-  else
+  } else {
     proto = eStrdup("<>");
+  }
 
   inheritance = eMalloc(strlen(proto) + strlen(superclass) + 1);
   strcpy(inheritance, superclass);
   strcat(inheritance, proto);
 
-  emitObjCTag(ident, K_INTERFACE, 0, inheritance);
+  emitObjCTag(ident, K_INTERFACE, 0, inheritance, FALSE);
   readObjCMethods(K_INTMETHOD, ident, inheritance);
 
   eFree(ident);
@@ -532,14 +557,20 @@ static void implementationHandler(const char *keyword) {
   char *ident;
   int z;
 
+
+  z = skipToNonWhite();
+  ident = readToNonIdentifier(0);
+
+  if (ident && *ident) {
+    ident = eStrdup(ident);
+  } else {
+    return;
+  }
+
+  recordPosition();
+
   z = skipToNonWhite();
 
-  ident = readToNonIdentifier(0);
-  if (ident && *ident)
-    ident = eStrdup(ident);
-  else
-    return;
-  z = skipToNonWhite();
   if (z == '(') {
     char *category;
     char *newIdent;
@@ -551,9 +582,10 @@ static void implementationHandler(const char *keyword) {
       eFree(ident);
       ident = newIdent;
     }
-  }
+   printf("ident %s \n", ident);
+  } 
 
-  emitObjCTag(ident, K_IMPLEMENTATION, 0, 0);
+  emitObjCTag(ident, K_IMPLEMENTATION, 0, 0, TRUE);
   readObjCMethods(K_IMPMETHOD, ident, 0);
 
   eFree(ident);
@@ -561,20 +593,13 @@ static void implementationHandler(const char *keyword) {
 
 static boolean doObjCParsing() {
 
-  // HACK ALERT.  If we don't seek to the end of
-  // the file then all the tags that the CParser
-  // creates are overwritten.  It also appears
-  // that we are at the end of the file. fseek
-  // could be causing a side-effect?
-
-  fseek (TagFile.fp, 0L, SEEK_END); 
+  //fseek (TagFile.fp, 0L, SEEK_END); 
   cppInit(0, 0);
 
   while (skipToObjCKeyword() != EOF) {
     struct handlerType *iter;
     char *keyword;
 
-    recordPosition();
     keyword = readToNonAlpha(NULL);
     if (!keyword) continue;
     keyword = eStrdup(keyword);
@@ -597,36 +622,32 @@ static boolean findTags (const unsigned int passCount,
         parserDefinition *baseParser) {
 
  if ( passCount == 1 ) {
-    if (baseParser && baseParser->parser2) {
-      baseParser->parser2(passCount);
+   if (baseParser && baseParser->parser2) {
+     baseParser->parser2(passCount);
     }
 
-  // ignore the return value and do a second pass 
-  // with the ObjCParser
-  return TRUE;
+    // ignore the return value and do a second pass 
+    // with the ObjCParser
+    return TRUE;
   }
 
   if (passCount == 2) {
-   return doObjCParsing();
+    return doObjCParsing();
   } 
 
   return FALSE;
 }
 
 static parserDefinition* getCParser(void) {
-    static parserDefinition *cParser = 0;
-   if (!cParser) {
-     cParser = CParser();
-   }
-   return cParser;
+  static parserDefinition *cParser = 0;
+  if (!cParser) { cParser = CParser(); }
+  return cParser;
 }
 
 static parserDefinition* getCppParser(void) {
-    static parserDefinition *cppParser = 0;
-   if (!cppParser) {
-     cppParser = CppParser();
-   }
-   return cppParser;
+  static parserDefinition *cppParser = 0;
+  if (!cppParser) { cppParser = CppParser(); }
+  return cppParser;
 }
 
 /*
@@ -636,10 +657,10 @@ static boolean findObjCTags (const unsigned int passCount) {
   parserDefinition *parser = 0;
 
   if ( isHeaderFile() ) {
-   parser = getCppParser();
- } else {
-   parser = getCParser();
- }
+    parser = getCppParser();
+  } else {
+    parser = getCParser();
+  }
 
   boolean ret = findTags(passCount, parser);
  return ret;
