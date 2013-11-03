@@ -451,6 +451,7 @@ static void protocolHandler(const char *keyword) {
   else
     return;
 
+  recordPosition();
   z = skipToNonWhite();
   if (z == ';') {
     eFree(ident);
@@ -462,7 +463,7 @@ static void protocolHandler(const char *keyword) {
   else
     proto = eStrdup("<>");
 
-  emitObjCTag(ident, K_PROTOCOL, 0, proto, FALSE);
+  emitObjCTag(ident, K_PROTOCOL, 0, proto, TRUE);
 
   readObjCMethods(K_PMETHOD, ident, proto);
 
