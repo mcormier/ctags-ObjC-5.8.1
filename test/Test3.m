@@ -27,9 +27,6 @@
 -(void)fourthMethod:(NSRect)drawRect { 
   // I am an empty method 
 }
-// ReadObjCMethods
-//  getSingleObjCMethod
-//  Emit
 
 
 @end
