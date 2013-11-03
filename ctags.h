@@ -15,13 +15,13 @@
 *   MACROS
 */
 #ifndef PROGRAM_VERSION
-# define PROGRAM_VERSION "5.8.1"
+# define PROGRAM_VERSION "5.8.2"
 #endif
-#define PROGRAM_NAME      "Exuberant Ctags (w/ ObjC support)"
-#define PROGRAM_URL       "http://ctags.sourceforge.net"
-#define PROGRAM_COPYRIGHT "Copyright (C) 1996-2009"
-#define AUTHOR_NAME       "Darren Hiebert"
-#define AUTHOR_EMAIL      "dhiebert@users.sourceforge.net"
+#define PROGRAM_NAME      "Exuberant Ctags (w/ ObjC support) Preen And Prune Fork"
+#define PROGRAM_URL       "https://github.com/mcormier/ctags-ObjC-5.8.1"
+#define PROGRAM_COPYRIGHT "Copyright (C) 1996-2013"
+#define AUTHOR_NAME       "Matthieu Cormier"
+#define AUTHOR_EMAIL      "mcormier@preenandprune.com"
 
 #endif	/* _CTAGS_H */
 

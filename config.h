@@ -1,3 +1,4 @@
+
 /* config.h.  Generated from config.h.in by configure.  */
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
@@ -123,7 +124,7 @@
 #define HAVE_STRSTR 1
 
 /* Define to 1 if you have the <sys/dir.h> header file. */
-/* #undef HAVE_SYS_DIR_H */
+#define HAVE_SYS_DIR_H 1
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #define HAVE_SYS_STAT_H 1
@@ -250,7 +251,7 @@
 
 /* If you wish to change the directory in which temporary files are stored,
    define this label to the directory desired. */
-#define TMPDIR "/cygdrive/c/Users/MATTHI~1.COR/AppData/Local/Temp"
+#define TMPDIR "/var/folders/v2/gxq41ltd1nb_shvpnm3ky1hr0000gn/T/"
 
 /* Package version. */
 /* #undef VERSION */

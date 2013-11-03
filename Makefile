@@ -31,7 +31,7 @@ DEFS	= -DHAVE_CONFIG_H
 CFLAGS	= -g -O2
 LDFLAGS	= 
 LIBS	= 
-EXEEXT	= .exe
+EXEEXT	= 
 OBJEXT	= o
 
 # If you cannot run the "configure" script to set the variables above, then
