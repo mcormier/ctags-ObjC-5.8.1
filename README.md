@@ -47,7 +47,7 @@ Exuberant Ctags offers the following features:
 
 Visit the Exuberant Ctags web site:
 
-    http://ctags.sourceforge.net
+   http://ctags.sourceforge.net
 
 
 Which brings us to the most obvious question:
