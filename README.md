@@ -1,10 +1,17 @@
-Exuberant Ctags
+Exuberant Ctags (An Obj-C fork)
 ===============
-Author: Darren Hiebert <dhiebert at users.sourceforge.net>
-        http://ctags.sourceforge.net
-        Instant Messaging:
-          Yahoo! ID     : dbhiebert
-          AIM ScreenName: darrenhiebert
+
+    Ctags author: Darren Hiebert <dhiebert at users.sourceforge.net>
+                  http://ctags.sourceforge.net
+                  Instant Messaging:
+                    Yahoo! ID     : dbhiebert
+                    AIM ScreenName: darrenhiebert
+  
+    Original Obj-C parser author: Andrew Rudner <andy at aeruder.net>
+    Source of Obj-C parser:  http://gitweb.aeruder.net/?p=ctags-objc.git;a=summary (broken)
+    
+    Butchering of Obj-C parser: Matthieu Cormier <mcormier at preenandprune.com>
+
 
 Exuberant Ctags is a multilanguage reimplementation of the much-underused
 ctags(1) program and is intended to be the mother of all ctags programs. It
@@ -19,7 +26,7 @@ Exuberant Ctags offers the following features:
 
 1.  It supports the following languages: Assembler, AWK, ASP, BETA,
     Bourne/Korn/Z Shell, C, C++, C#, COBOL, Eiffel, Erlang, Fortran, Java, Lisp,
-    Lua, Makefile, Objective-C, Pascal, Perl, PHP, PL/SQL, Python, REXX, Ruby, 
+    Lua, Makefile, **Objective-C**, Pascal, Perl, PHP, PL/SQL, Python, REXX, Ruby, 
     Scheme, S-Lang, SML (Standard ML), Tcl, Vera, Verilog, VHDL, Vim, and YACC.
 
 2.  It is capable of generating tags for virtually all C language constructs.
