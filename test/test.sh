@@ -1,7 +1,14 @@
 rm *.tags
 
 function testFile {
-  ../ctags  --language-force=ObjC ${1}.m
+  # Assume a .m file first. Use a .h otherwise
+
+  if [ -e "${1}.m" ]; then
+    EXT=".m"
+  else
+    EXT=".h"
+  fi
+  ../ctags  --language-force=ObjC ${1}${EXT}
   mv tags ${1}.tags
 }
 
