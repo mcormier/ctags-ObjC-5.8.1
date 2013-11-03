@@ -498,6 +498,7 @@ static void interfaceHandler(const char *keyword) {
      return;
   }
 
+  recordPosition();
   z = skipToNonWhite();
   if (z == '(') {
     char *category;
@@ -533,7 +534,7 @@ static void interfaceHandler(const char *keyword) {
   strcpy(inheritance, superclass);
   strcat(inheritance, proto);
 
-  emitObjCTag(ident, K_INTERFACE, 0, inheritance, FALSE);
+  emitObjCTag(ident, K_INTERFACE, 0, inheritance, TRUE);
   readObjCMethods(K_INTMETHOD, ident, inheritance);
 
   eFree(ident);
@@ -582,7 +583,6 @@ static void implementationHandler(const char *keyword) {
       eFree(ident);
       ident = newIdent;
     }
-   printf("ident %s \n", ident);
   } 
 
   emitObjCTag(ident, K_IMPLEMENTATION, 0, 0, TRUE);
