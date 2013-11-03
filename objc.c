@@ -242,12 +242,10 @@ int skipToMethod(void) {
  */
 static int skipToObjCKeyword (void) {
   int z;
-  int x;
   while ((z = skipToNonWhite()) != EOF) {
-    x = cppGetc();
+    cppGetc();
     if (z == '"') readToMatchingBrace(0);
     if (z == '@') { 
-      //cppUngetc(x);
       break;
     }
 
