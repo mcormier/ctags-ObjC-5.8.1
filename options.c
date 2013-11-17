@@ -489,13 +489,13 @@ static void parseLongOption (cookedArgs *const args, const char *item)
 	const char* const equal = strchr (item, '=');
 	if (equal == NULL)
 	{
-		args->item = eStrdup (item); /* FIXME: memory leak. */
+		args->item = eStrdup (item); 
 		args->parameter = "";
 	}
 	else
 	{
 		const size_t length = equal - item;
-		args->item = xMalloc (length + 1, char); /* FIXME: memory leak. */
+		args->item = xMalloc (length + 1, char); 
 		strncpy (args->item, item, length);
 		args->item [length] = '\0';
 		args->parameter = equal + 1;
@@ -533,6 +533,7 @@ static void cArgRead (cookedArgs *const current)
 		{
 			current->isOption = FALSE;
 			current->longOption = FALSE;
+			free(current->item);  // Don't leak memory
 			current->item = item;
 			current->parameter = NULL;
 		}
@@ -614,16 +615,14 @@ extern void cArgForth (cookedArgs* const current)
 {
 	Assert (current != NULL);
 	Assert (! cArgOff (current));
-	if (cArgOptionPending (current))
+	if (cArgOptionPending (current)) {
 		parseShortOption (current);
-	else
-	{
+	} else {
 		Assert (! argOff (current->args));
 		argForth (current->args);
-		if (! argOff (current->args))
+		if (! argOff (current->args)) {
 			cArgRead (current);
-		else
-		{
+		} else {
 			current->isOption = FALSE;
 			current->longOption = FALSE;
 			current->shortOptions = NULL;
@@ -1614,9 +1613,9 @@ extern void parseOption (cookedArgs* const args)
 	Assert (! cArgOff (args));
 	if (args->isOption)
 	{
-		if (args->longOption)
+		if (args->longOption) {
 			processLongOption (args->item, args->parameter);
-		else
+		} else
 		{
 			const char *parameter = args->parameter;
 			while (*parameter == ' ')
@@ -1632,6 +1631,7 @@ extern void parseOptions (cookedArgs* const args)
 	NonOptionEncountered = FALSE;
 	while (! cArgOff (args)  &&  cArgIsOption (args))
 		parseOption (args);
+
 	if (! cArgOff (args)  &&  ! cArgIsOption (args))
 		NonOptionEncountered = TRUE;
 }
