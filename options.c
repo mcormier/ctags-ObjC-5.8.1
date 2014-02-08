@@ -465,7 +465,7 @@ static void parseShortOption (cookedArgs *const args)
 {
 	args->simple [0] = *args->shortOptions++;
 	args->simple [1] = '\0';
-    args->item = eStrdup (args->simple); 
+	args->item = eStrdup (args->simple); 
 	if (! isCompoundOption (*args->simple))
 		args->parameter = "";
 	else if (*args->shortOptions == '\0')
