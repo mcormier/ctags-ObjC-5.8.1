@@ -419,7 +419,7 @@ static void readObjCMethods(objcKind mType, const char *scope, const char *inher
       case '+':
         recordPosition();
         getSingleObjCMethod(method);
-        emitObjCTag(vStringValue(method), mType, scope, inheritance, FALSE);
+        emitObjCTag(vStringValue(method), mType, scope, inheritance, TRUE);
         break;
       default:
         break;
