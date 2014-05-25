@@ -1,3 +1,5 @@
+#!/usr/bin/bash
+
 rm *.tags
 
 function testFile {
@@ -8,7 +10,7 @@ function testFile {
   else
     EXT=".h"
   fi
-  ../ctags  --language-force=ObjC ${1}${EXT}
+  ../ctags -n --language-force=ObjC ${1}${EXT}
   mv tags ${1}.tags
 }
 
