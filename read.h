@@ -72,8 +72,8 @@ typedef struct sInputFile {
 	vString    *line;          /* last line read from file */
 	const unsigned char* currentLine;  /* current line being worked on */
 	FILE       *fp;            /* stream used for reading the file */
-	unsigned long lineNumber;  /* line number in the input file */
-	fpos_t      filePosition;  /* file position of current line */
+	volatile unsigned long lineNumber;  /* line number in the input file */
+	volatile fpos_t      filePosition;  /* file position of current line */
 	int         ungetch;       /* a single character that was ungotten */
 	boolean     eof;           /* have we reached the end of file? */
 	boolean     newLine;       /* will the next character begin a new line? */
